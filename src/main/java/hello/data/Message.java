@@ -1,6 +1,6 @@
-package hello;
+package hello.data;
 
-class Message {
+public class Message {
 
 	public String name;
 	public String message;

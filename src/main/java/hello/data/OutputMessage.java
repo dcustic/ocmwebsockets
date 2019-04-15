@@ -1,8 +1,6 @@
-package hello;
+package hello.data;
 
-import hello.data.User;
-
-class OutputMessage extends Message{
+public class OutputMessage extends Message {
 	public String time;
 
 

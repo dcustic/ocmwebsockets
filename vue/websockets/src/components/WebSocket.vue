@@ -17,7 +17,7 @@
 				</div>
 			</div>
 			<div class="row" v-if="connected">
-				<div class="col-md-12">
+				<div class="col-md-9">
 					<table id="conversation" class="table table-striped">
 						<thead>
 						<tr>
@@ -32,6 +32,13 @@
 						</tr>
 						</tbody>
 					</table>
+				</div>
+				<div class="col-md-3">
+					<ul>
+						<li v-for="user in joinedUsers">
+							{{user.name}} [{{user.state}}]
+						</li>
+					</ul>
 				</div>
 			</div>
 		</div>
@@ -61,6 +68,7 @@
 		data() {
 			return {
 				receivedMessages: [],
+				joinedUsers: [],
 				username: "",
 				globalMessage: "",
 				socket: {},
@@ -74,17 +82,24 @@
 		},
 		methods: {
 			connect() {
-				this.socket = new SockJS("http://172.21.12.11:8080/gs-guide-websocket");
+				this.socket = new SockJS("http://172.21.12.10:8080/gs-guide-websocket");
 				this.stompClient = Stomp.over(this.socket);
 				this.stompClient.connect(
 					{},
 					frame => {
 						console.log(frame);
-						this.receivedMessages.push({name: "Server", message: this.username + " is connected!"});
+
 						this.stompClient.subscribe("/topic/globalMessages", tick => {
 							console.log("globalMessage", tick);
 							this.receivedMessages.push(JSON.parse(tick.body));
 						});
+
+						this.stompClient.subscribe("/topic/members/list", tick => {
+							console.log("members/list", tick);
+							this.joinedUsers = JSON.parse(tick.body);
+						});
+
+						this.sendJoined();
 					},
 					error => {
 						console.log(error);
@@ -99,11 +114,23 @@
 						message: this.globalMessage
 					};
 					this.stompClient.send("/app/sendMessage", JSON.stringify(msg), {});
-					this.globalMessage = "";
+				}
+			},
+			sendJoined() {
+				console.log("sendJoined");
+				if (this.connected) {
+					this.stompClient.send("/app/join", this.username, {});
+				}
+			},
+			sendDisconnect() {
+				console.log("sendDisconnect");
+				if (this.connected) {
+					this.stompClient.send("/app/disconnect", this.username, {});
 				}
 			},
 			disconnect() {
 				if (this.stompClient) {
+					this.sendDisconnect();
 					this.stompClient.disconnect();
 				}
 			}
