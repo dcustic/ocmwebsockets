@@ -1,3 +1,4 @@
+/* eslint-disable */
 <template>
 	<div>
 		<div id="main-content" class="container">
@@ -5,40 +6,49 @@
 				<div class="col-md-6">
 					<form class="form-inline">
 						<div class="form-group">
-							<label for="connect">WebSocket connection:</label>
-							<button id="connect" class="btn btn-default" type="submit" :disabled="connected == true" @click.prevent="connect">Connect</button>
-							<button id="disconnect" class="btn btn-default" type="submit" :disabled="connected == false" @click.prevent="disconnect">Disconnect
+							<input v-if="!connected" type="text" id="name" class="form-control" v-model="username" placeholder="Name">
+							<button v-if="!connected" id="connect" class="btn btn-primary" :disabled="username.length === 0" type="submit"
+									@click.prevent="connect">Connect
+							</button>
+							<button v-if="connected" id="disconnect" class="btn btn-danger" type="submit" @click.prevent="disconnect">Disconnect
 							</button>
 						</div>
 					</form>
 				</div>
-				<div class="col-md-6">
-					<form class="form-inline">
-						<div class="form-group">
-							<label for="name">What is your name?</label>
-							<input type="text" id="name" class="form-control" v-model="send_message" placeholder="Your name here...">
-						</div>
-						<button id="send" class="btn btn-default" type="submit" @click.prevent="send">Send</button>
-					</form>
-				</div>
 			</div>
-			<div class="row">
+			<div class="row" v-if="connected">
 				<div class="col-md-12">
 					<table id="conversation" class="table table-striped">
 						<thead>
 						<tr>
-							<th>Greetings</th>
+							<th colspan="3">Greetings</th>
 						</tr>
 						</thead>
 						<tbody>
-						<tr v-for="item in received_messages" :key="item">
-							<td>{{ item }}</td>
+						<tr v-for="item in receivedMessages">
+							<td v-if="item.time">{{item.time}} :</td>
+							<td v-if="item.name">{{ item.name }} :</td>
+							<td v-bind:colspan="item.name ? '1' : '3'">{{ item.message }}</td>
 						</tr>
 						</tbody>
 					</table>
 				</div>
 			</div>
 		</div>
+		<footer class="footer" v-if="connected">
+			<div class="container">
+				<form >
+					<div class="row">
+						<div class="col-9 m-0 pr-0">
+							<input type="text" class="form-control m-0 pr-0" placeholder="Message..."  v-model="globalMessage">
+						</div>
+						<div class="col-3 m-0 pl-0">
+							<button class="btn btn-primary m-0 pl-0" type="submit" @click.prevent="sendGlobalMessage">Send Global Message</button>
+						</div>
+					</div>
+				</form>
+			</div>
+		</footer>
 	</div>
 </template>
 
@@ -50,46 +60,52 @@
 		name: "websocketdemo",
 		data() {
 			return {
-				received_messages: [],
-				send_message: null,
-				connected: false
+				receivedMessages: [],
+				username: "",
+				globalMessage: "",
+				socket: {},
+				stompClient: {}
 			};
 		},
+		computed: {
+			connected() {
+				return this.stompClient && this.stompClient.connected;
+			}
+		},
 		methods: {
-			send() {
-				console.log("Send message:" + this.send_message);
-				if (this.stompClient && this.stompClient.connected) {
-					const msg = { name: this.send_message };
-					this.stompClient.send("/app/hello", JSON.stringify(msg), {});
-				}
-			},
 			connect() {
 				this.socket = new SockJS("http://172.21.12.11:8080/gs-guide-websocket");
 				this.stompClient = Stomp.over(this.socket);
 				this.stompClient.connect(
 					{},
 					frame => {
-						this.connected = true;
 						console.log(frame);
-						this.stompClient.subscribe("/topic/greetings", tick => {
-							console.log(tick);
-							this.received_messages.push(JSON.parse(tick.body).content);
+						this.receivedMessages.push({name: "Server", message: this.username + " is connected!"});
+						this.stompClient.subscribe("/topic/globalMessages", tick => {
+							console.log("globalMessage", tick);
+							this.receivedMessages.push(JSON.parse(tick.body));
 						});
 					},
 					error => {
 						console.log(error);
-						this.connected = false;
 					}
 				);
+			},
+			sendGlobalMessage() {
+				console.log("Send message:" + this.globalMessage);
+				if (this.connected) {
+					const msg = {
+						name: this.username,
+						message: this.globalMessage
+					};
+					this.stompClient.send("/app/sendMessage", JSON.stringify(msg), {});
+					this.globalMessage = "";
+				}
 			},
 			disconnect() {
 				if (this.stompClient) {
 					this.stompClient.disconnect();
 				}
-				this.connected = false;
-			},
-			tickleConnection() {
-				this.connected ? this.disconnect() : this.connect();
 			}
 		},
 		mounted() {
@@ -99,5 +115,11 @@
 </script>
 
 <style scoped>
-
+.footer {
+	position: absolute;
+	bottom: 0;
+	width: 100%;
+	height: 60px;
+	background-color: #f5f5f5;
+}
 </style>
