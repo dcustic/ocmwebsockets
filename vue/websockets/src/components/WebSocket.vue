@@ -64,7 +64,7 @@
 				}
 			},
 			connect() {
-				this.socket = new SockJS("http://localhost:8080/gs-guide-websocket");
+				this.socket = new SockJS("http://172.21.12.11:8080/gs-guide-websocket");
 				this.stompClient = Stomp.over(this.socket);
 				this.stompClient.connect(
 					{},
