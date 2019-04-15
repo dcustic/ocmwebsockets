@@ -23,4 +23,8 @@ public class MessageSender {
 		template.convertAndSend("/topic/globalMessages", message);
 	}
 
+	public void sendMessageToUser(String userId, String message) {
+		template.convertAndSendToUser(userId, "/queue", message);
+	}
+
 }
