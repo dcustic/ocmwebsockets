@@ -122,7 +122,6 @@
 						name: this.username,
 						message: this.globalMessage
 					};
-					debugger;
 					this.stompClient.send("/app/queue/user/"+this.receiver, JSON.stringify(msg), {});
 				}
 			},
