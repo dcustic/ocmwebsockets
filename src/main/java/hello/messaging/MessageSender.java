@@ -23,7 +23,7 @@ public class MessageSender {
 		template.convertAndSend("/topic/globalMessages", message);
 	}
 
-	public void sendMessageToUser(String userId, String message) {
+	public <T extends Message> void sendMessageToUser(String userId, T message) {
 		template.convertAndSendToUser(userId, "/queue", message);
 	}
 

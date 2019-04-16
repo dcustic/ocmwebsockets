@@ -5,6 +5,7 @@ import hello.data.User;
 import hello.enums.UserState;
 import hello.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.util.HtmlUtils;
@@ -38,6 +39,11 @@ public class MessageReceiver {
     @MessageMapping("/sendMessage")
     public <T extends Message> void receiveMessage(T message) {
         messageSender.sendGlobalMessage(message);
+    }
+
+    @MessageMapping("/queue/user/{userId}")
+    public <T extends Message> void receivePrivateMessage(T message, @DestinationVariable String userId) {
+        messageSender.sendMessageToUser(userId, message);
     }
 
 }

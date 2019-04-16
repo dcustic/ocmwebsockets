@@ -46,11 +46,14 @@
 			<div class="container">
 				<form >
 					<div class="row">
-						<div class="col-9 m-0 pr-0">
+						<div class="col-6 m-0 pr-0">
 							<input type="text" class="form-control m-0 pr-0" placeholder="Message..."  v-model="globalMessage">
 						</div>
+						<div class="col-3 m-0 pr-0">
+							<input type="text" class="form-control m-0 pr-0" placeholder="private receiver..."  v-bind="receiver">
+						</div>
 						<div class="col-3 m-0 pl-0">
-							<button class="btn btn-primary m-0 pl-0" type="submit" @click.prevent="sendGlobalMessage">Send Global Message</button>
+							<button class="btn btn-primary m-0 pl-0" type="submit" @click.prevent="sendGlobalMessage" >Send Global Message</button>
 						</div>
 					</div>
 				</form>
@@ -72,7 +75,8 @@
 				username: "",
 				globalMessage: "",
 				socket: {},
-				stompClient: {}
+				stompClient: {},
+				receiver: ""
 			};
 		},
 		computed: {
@@ -100,11 +104,26 @@
 						});
 
 						this.sendJoined();
+
+						this.stompClient.subscribe("/user/" + this.receiver + "/queue", tick => {
+							console.log("private user message: ", tick);
+							this.receivedMessages.push(JSON.parse(tick.body));
+						});
 					},
 					error => {
 						console.log(error);
 					}
 				);
+			},
+			sendPrivateMessage() {
+				console.log("Send message to user:" + this.globalMessage);
+				if (this.connected) {
+					const msg = {
+						name: this.username,
+						message: this.globalMessage
+					};
+					this.stompClient.send("/app/queue/user/"+this.receiver, JSON.stringify(msg), {});
+				}
 			},
 			sendGlobalMessage() {
 				console.log("Send message:" + this.globalMessage);
