@@ -50,10 +50,10 @@
 							<input type="text" class="form-control m-0 pr-0" placeholder="Message..."  v-model="globalMessage">
 						</div>
 						<div class="col-3 m-0 pr-0">
-							<input type="text" class="form-control m-0 pr-0" placeholder="private receiver..."  v-bind="receiver">
+							<input type="text" class="form-control m-0 pr-0" placeholder="private receiver..."  v-model="receiver">
 						</div>
 						<div class="col-3 m-0 pl-0">
-							<button class="btn btn-primary m-0 pl-0" type="submit" @click.prevent="sendGlobalMessage" >Send Global Message</button>
+							<button class="btn btn-primary m-0 pl-0" type="submit" @click.prevent="sendPrivateMessage" >Send Global Message</button>
 						</div>
 					</div>
 				</form>
@@ -122,6 +122,7 @@
 						name: this.username,
 						message: this.globalMessage
 					};
+					debugger;
 					this.stompClient.send("/app/queue/user/"+this.receiver, JSON.stringify(msg), {});
 				}
 			},
