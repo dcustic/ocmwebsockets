@@ -107,14 +107,14 @@
 						frame => {
 							console.log(frame);
 
-							this.stompClient.subscribe("/topic/globalMessages", tick => {
-								console.log("globalMessage", tick);
-								this.receivedMessages.push(JSON.parse(tick.body));
-							});
-
 							this.stompClient.subscribe("/topic/members/list", tick => {
 								console.log("members/list", tick);
 								this.joinedUsers = JSON.parse(tick.body);
+							});
+
+							this.stompClient.subscribe("/topic/globalMessages", tick => {
+								console.log("globalMessage", tick);
+								this.receivedMessages.push(JSON.parse(tick.body));
 							});
 
 							this.stompClient.subscribe("/user/queue", tick => {
