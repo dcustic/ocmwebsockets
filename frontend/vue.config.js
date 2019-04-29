@@ -3,7 +3,7 @@ module.exports = {
 		host: "172.21.12.10",
 		port: 8081,
 		proxy: {
-			'/':{
+			'/backend':{
 				target: 'http://172.21.12.10:8080',
 				secure:false,
 				changeOrigin:true,

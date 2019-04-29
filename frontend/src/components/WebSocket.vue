@@ -98,9 +98,9 @@
 				loginParams.append('username', this.username);
 				loginParams.append('password', this.password);
 
-				axios.post('/login', loginParams).then((response) => {
+				axios.post('/backend/login', loginParams).then((response) => {
 
-					this.socket = new SockJS("/gs-guide-websocket");
+					this.socket = new SockJS("/backend/gs-guide-websocket");
 					this.stompClient = Stomp.over(this.socket);
 					this.stompClient.connect(
 						{},
@@ -156,7 +156,7 @@
 			},
 			disconnect() {
 				if (this.stompClient) {
-					axios.post('/logout').then((response) => {
+					axios.post('/backend/logout').then((response) => {
 						this.stompClient.disconnect();
 					});
 				}
