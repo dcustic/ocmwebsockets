@@ -53,7 +53,7 @@
 							<input type="text" class="form-control m-0 pr-0" placeholder="private receiver..."  v-model="receiver">
 						</div>
 						<div class="col-3 m-0 pl-0">
-							<button class="btn btn-primary m-0 pl-0" type="submit" @click.prevent="sendPrivateMessage" >Send Global Message</button>
+							<button class="btn btn-primary m-0 pl-0" type="submit" @click.prevent="sendMessage" >Send Message</button>
 						</div>
 					</div>
 				</form>
@@ -105,7 +105,7 @@
 
 						this.sendJoined();
 
-						this.stompClient.subscribe("/user/" + this.receiver + "/queue", tick => {
+						this.stompClient.subscribe("/user/" + this.username + "/queue", tick => {
 							console.log("private user message: ", tick);
 							this.receivedMessages.push(JSON.parse(tick.body));
 						});
@@ -114,6 +114,14 @@
 						console.log(error);
 					}
 				);
+			},
+			sendMessage(){
+				if(this.receiver){
+					this.sendPrivateMessage();
+				}else {
+					this.sendGlobalMessage();
+				}
+
 			},
 			sendPrivateMessage() {
 				console.log("Send message to user:" + this.globalMessage);
